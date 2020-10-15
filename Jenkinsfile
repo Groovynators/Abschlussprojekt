@@ -33,6 +33,7 @@ pipeline {
                 steps {
                     withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASSWORD')]) {
                     configFileProvider([configFile(fileId: 'default', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
+                        sh " sed -i 's|password: admin|password: '${NEXUS_PASSWORD}'|g' prometheus/prometheus.yml"
                         sh 'mvn -gs $MAVEN_GLOBAL_SETTINGS deploy'
                     }
                     }
