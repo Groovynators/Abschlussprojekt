@@ -1,5 +1,4 @@
 pipeline {
-
     agent any
     environment {
         TOMCAT_HOST = 'tomcat:8080'
