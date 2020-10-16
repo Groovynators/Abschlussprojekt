@@ -71,9 +71,9 @@ services:
     build: ./kibana
     container_name: kibana
     links:
-      - elasticsearch
+      - "elasticsearch"
     ports:
-      - 8086:5601
+      - "8086:5601"
     networks:
       - tools
   
