@@ -1,0 +1,21 @@
+{
+  "name": "kibana-prometheus-exporter",
+  "version": "7.2.0",
+  "description": "Prometheus metrics for Kibana",
+  "main": "index.js",
+  "kibana": {
+    "version": "7.2.0",
+    "templateVersion": "8.0.0"
+  },
+  "dependencies": {
+    "request-promise": "^4.2.2"
+  },
+  "build": {
+    "git": {
+      "count": "154",
+      "sha": "ae424f8",
+      "date": "Thu, 27 Jun 2019 22:05:03 +0100"
+    },
+    "date": "Thu Jun 27 2019 22:08:15 GMT+0100 (British Summer Time)"
+  }
+}
