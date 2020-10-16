@@ -51,12 +51,12 @@ pipeline {
                     }
                 }
             }
-            stage('stop docker-compose') {
+      /*      stage('stop docker-compose') {
                 steps {
                     sleep(150)
                     sh 'docker-compose down'
                 }
-            }
+            } */
     }
 }
     
