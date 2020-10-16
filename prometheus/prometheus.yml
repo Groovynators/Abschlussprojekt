@@ -14,7 +14,7 @@ scrape_configs:
     scrape_interval: 5s
     metrics_path: /prometheus
     static_configs:
-      - targets: ['52.233.247.20:8080']
+      - targets: ['52.233.247.20:8081']
 
   - job_name: 'elasticsearch'
     scrape_interval: 10s
@@ -37,13 +37,13 @@ scrape_configs:
     metrics_path: /service/metrics/prometheus
     basic_auth:
       username: admin
-      password: admin
+      password: dnNcZKVtTBrC9u5
     static_configs:
-      - targets: ['52.233.247.20:8081']
+      - targets: ['52.233.247.20:8083']
 
   - job_name: 'sonarqube'
     metrics_path: '/api/prometheus/metrics'
     static_configs:
-      - targets: ['52.233.247.20:9000']
+      - targets: ['52.233.247.20:8084']
 
   
