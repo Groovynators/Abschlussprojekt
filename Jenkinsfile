@@ -6,11 +6,6 @@ pipeline {
         TOMCAT_HOST = 'tomcat:8080'
                }
         stages {
-            stage('Docker-compose-up') {
-                steps {
-                    sh 'docker-compose up -d --build' 
-                }
-            }
             stage('Testen und Kompilieren') {
                 steps {
                     sh 'mvn clean test' 
@@ -46,13 +41,7 @@ pipeline {
                    // configFileProvider([configFile(fileId: 'default', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
                        // sh 'mvn -gs $MAVEN_GLOBAL_SETTINGS tomcat7:redeploy'
                          sh 'curl -i -X PUT -u tomcat:s3cret http://tomcat:8080/manager/text/deploy?path=/gryns_webblog --upload-file target/gryns_webblog.war'
-            }
-        }
-            stage('Docker-compose down') {
-                steps {
-                sleep (300)
-                    sh 'docker-compose down' 
-                }
-            }
+    
         }
     }
+        }
