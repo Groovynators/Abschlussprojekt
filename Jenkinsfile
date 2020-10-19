@@ -17,8 +17,9 @@ pipeline {
         }
         stage('Sonar Verify') {
             steps {
-                script {
-                    mvn.verify()
+                withCredentials([usernamePassword(credentialsId: 'sonar', usernameVariable: 'SONAR_USER', passwordVariable: 'SONAR_PASSWORD')]) {
+                    configFileProvider([configFile(fileId: 'default', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
+                      sh 'mvn verify'
                 }
             }
         }
