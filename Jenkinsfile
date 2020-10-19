@@ -1,67 +1,51 @@
-  
 pipeline {
     agent any
-    /*environment {
-        NEXUS_HOST = 'nexus:8081'
-        SONAR_HOST = 'sonarqube:9000'
-        TOMCAT_HOST = 'tomcat:8080'
-        }*/
-        stages {
-            /*stage ('start docker-compose') {
-                steps {
-                    sh 'docker-compose up -d --build'
-                }
-            }*/
-            stage('compile') {
-                steps {
-                    echo "${WORKSPACE}"
-                        script {
-                            mvn.compile() 
-                        }
-                    }
-            }
-            stage('test') {
-                steps {
-                    script {
-                        mvn.test()
-                    }
+    stages {
+		stage('Compile') {
+			steps {
+                script {
+                    mvn.compile()
                 }
             }
-            stage('verify with Sonarqube') {
-                steps {
-                    script {
-                        mvn.verify()
-                    }
+        }
+        stage('Test') {
+            steps {
+                script {
+                    mvn.test()
                 }
             }
-            stage('create WAR-file') {
-                steps {
-                    script {
-                      mvn.artifactpackage()
+        }
+        stage('Sonar Verify') {
+            steps {
+                script {
+                    mvn.verify()
+                }
+            }
+        }
+        stage('Package') {
+            steps {
+                script {
+                    mvn.artifactpackage()
+                }
+            }
+        }
+        stage('Deploy Nexus') {
+            steps {
+                configFileProvider([configFile(fileId: 'default', variable: 'MAVEN_GLOBAL_SETTINGS')]){
+                script {
+                    mvn.deploy()
                     }
                 }
             }
-            stage('deploy to nexus') {
-                steps {
-                    //withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASSWORD')]) {
-                        script {
-                            mvn.deploy()
-                        }
+        }
+        stage('Deploy Tomcat') {
+			steps {
+                configFileProvider([configFile(fileId: 'default', variable: 'MAVEN_GLOBAL_SETTINGS')]){
+                script {
+                    mvn.tomcat()
                     }
                 }
-            stage('deploy War-file to tomcat') {
-                steps {
-                    //withCredentials([usernamePassword(credentialsId: 'tomcat', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASSWORD')]) {
-                   script {
-                            mvn.tomcat()
-                        }
-                    }
-                }
-            /*stage('stop docker-compose') {
-                steps {
-                    sleep(300)
-                    sh 'docker-compose down'
-                }
-            }*/
+            }
+        }
     }
 }
