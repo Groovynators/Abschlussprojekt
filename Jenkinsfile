@@ -1,62 +1,51 @@
 pipeline {
     agent any
-    environment {
-        NEXUS_HOST = 'nexus:8081'
-        SONAR_HOST = 'sonarqube:9000'
-        TOMCAT_HOST = 'tomcat:8080'
-    }
-        stages {
-            stage ('start docker-compose') {
-                steps {
-                    sh 'docker-compose up -d --build'
+    stages {
+		stage('Compile') {
+			steps {
+                script {
+                    mvn.compile()
                 }
             }
-            stage('test & compile') {
-                steps {
-                    sh 'mvn test' 
+        }
+        stage('Test') {
+            steps {
+                script {
+                    mvn.test()
                 }
             }
-            stage('verify with Sonarqube') {
-                steps {
-                    configFileProvider([configFile(fileId: 'default', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
-                        sh 'mvn -gs $MAVEN_GLOBAL_SETTINGS verify sonar:sonar'
+        }
+        stage('Sonar Verify') {
+            steps {
+                script {
+                    mvn.verify()
+                }
+            }
+        }
+        stage('Package') {
+            steps {
+                script {
+                    mvn.artifactpackage()
+                }
+            }
+        }
+        stage('Deploy Nexus') {
+            steps {
+                configFileProvider([configFile(fileId: 'default', variable: 'MAVEN_GLOBAL_SETTINGS')]){
+                script {
+                    mvn.deploy()
                     }
                 }
             }
-            stage('create WAR-file') {
-                steps {
-                    sh '''mvn clean package -DskipTests
-                        ls -al target'''
-                }
-            }
-            stage('deploy to nexus') {
-                steps {
-                    withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASSWORD')]) {
-                    configFileProvider([configFile(fileId: 'default', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
-                        sh " sed -i 's|password: admin|password: '${NEXUS_PASSWORD}'|g' prometheus/prometheus.yml"
-                        sh 'mvn -gs $MAVEN_GLOBAL_SETTINGS deploy -DskipTests'
-                        }
+        }
+        stage('Deploy Tomcat') {
+			steps {
+                configFileProvider([configFile(fileId: 'default', variable: 'MAVEN_GLOBAL_SETTINGS')]){
+                script {
+                    mvn.tomcat()
                     }
                 }
             }
-
-            stage('deploy War-file to tomcat') {
-                steps {
-                    //ansiblePlaybook colorized: true, disableHostKeyChecking: true, installation: 'ansible', inventory: 'inventory', playbook: 'deploy.yml'
-                    withCredentials([usernamePassword(credentialsId: 'tomcat', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASSWORD')]) {
-                    configFileProvider([configFile(fileId: 'default', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
-                      sh 'mvn -gs $MAVEN_GLOBAL_SETTINGS tomcat7:redeploy -DskipTests'
-                      //sh 'curl -i -X PUT -u tomcat:s3cret http://tomcat:8080/manager/text/deploy?path=/target/gryns_webblog --upload-file gryns_webblog.war'
-                        }
-                    }
-                }
-            }
-      /*      stage('stop docker-compose') {
-                steps {
-                    sleep(150)
-                    sh 'docker-compose down'
-                }
-            } */
+        }
     }
 }
-    
