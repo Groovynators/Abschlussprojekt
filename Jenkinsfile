@@ -15,13 +15,13 @@ pipeline {
                 }
             }
         }
-        /*stage('Sonar Verify') {
+        stage('Sonar Verify') {
             steps {
                 script {
                     mvn.verify()
                 }
             }
-        }/* */
+        }
         stage('Package') {
             steps {
                 script {
