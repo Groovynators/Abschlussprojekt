@@ -1,4 +1,3 @@
----
 - name: name of playbook
   hosts: all
   connection: docker
@@ -15,4 +14,4 @@
     copy:
       src: /var/jenkins_home/gryns_webblog.war
       dest: /usr/local/tomcat/webapps
-      mode: '0744'
+      mode: '0644'
