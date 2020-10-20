@@ -1,0 +1,92 @@
+version: '2.1'
+
+networks:
+  tools:
+    external:
+      name: tools
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+services:
+
+  prometheus:
+    build: ./prometheus
+    container_name: prometheus
+    volumes:
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    ports:
+      - 8088:9090
+    networks:
+      - tools
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: unless-stopped
+    ports:
+      - 8089:3000
+
+    networks:
+      - tools
+
+  fluentd:
+    build: ./fluentd
+    container_name: fluentd
+    links:
+      - "elasticsearch"
+    ports:
+      - "8090:24224"
+      - "8090:24224/udp"
+    networks:
+      - tools
+
+  elasticsearch:
+    image: elasticsearch:7.9.2
+    container_name: elasticsearch
+    environment:
+      - "discovery.type=single-node"
+    expose:
+      - "9200"
+    ports:
+      - "8087:9200"
+    networks:
+      - tools
+
+  kibana:
+    build: ./kibana
+    container_name: kibana
+    links:
+      - "elasticsearch"
+    ports:
+      - "8086:5601"
+    networks:
+      - tools
+
+  elasticsearch_exporter:
+    image: justwatch/elasticsearch_exporter:1.1.0
+    container_name: es-exporter-container
+    command:
+     - '--es.uri=http://elasticsearch-service:9200'
+    ports:
+     - "8091:9114"
+    links:
+      - "elasticsearch"
+    restart: unless-stopped
+    networks:
+      - tools
